@@ -4,7 +4,7 @@
 
 TensorFlow implementation of [WaveNet](http://arxiv.org/abs/1609.03499)
 
-### Done:
+### Done
 - [x] Generating audio
 
 ## Training the network
