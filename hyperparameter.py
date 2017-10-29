@@ -1,4 +1,3 @@
-sample_rate = 24000
 waveform_bits = 8
 waveform_categories = 1 << waveform_bits
 waveform_center_cat = 1 << (waveform_bits - 1)

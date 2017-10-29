@@ -44,7 +44,7 @@ def main():
                           batch_size=args.batch_size, split_nums=args.split_nums)
 
     with tf.variable_scope('model'):
-        model = WaveNet(*train_feeder.fed_holders)
+        model = WaveNet(*train_feeder.fed_holders, sample_rate=train_meta['sr'])
         with tf.variable_scope('optimizer'):
             opt = tf.train.AdamOptimizer()
             grads_and_vars = opt.compute_gradients(model.loss)

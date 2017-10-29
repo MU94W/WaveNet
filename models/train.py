@@ -49,7 +49,8 @@ def build_blocks(x, dilation_rate_lst_blocks):
 
 
 class WaveNet(Model):
-    def __init__(self, waveform, waveform_lens, global_condition=None, local_condition=None, name='WaveNet'):
+    def __init__(self, waveform, waveform_lens, global_condition=None, local_condition=None,
+                 sample_rate=16000, name='WaveNet'):
         """
         Build the computational graph.
         :param waveform: 16-bit or 8-bit waveform, shape:=(batch_size, time_steps, 1), dtype:=tf.int32
@@ -83,7 +84,7 @@ class WaveNet(Model):
         miu_wav = audio.tf_rev_quantize(quantized_miu_wav, bits=hp.waveform_bits)
         self.pred_wav = audio.tf_rev_miu_law(miu_wav, miu=float(hp.waveform_categories - 1))
         summary = [tf.summary.scalar('train/loss', self.loss),
-                   tf.summary.audio('train/audio', self.pred_wav, sample_rate=hp.sample_rate)]
+                   tf.summary.audio('train/audio', self.pred_wav, sample_rate=sample_rate)]
         self.summary_loss = summary[0]
         self.summary_audio = summary[1]
         self.summary = tf.summary.merge(summary)

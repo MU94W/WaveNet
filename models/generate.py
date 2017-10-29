@@ -66,7 +66,8 @@ class ResidualBlock(object):
 
 
 class WaveNet(Model):
-    def __init__(self, waveform_seed, max_infer_samples, global_control=None, local_control=None, name='WaveNet'):
+    def __init__(self, waveform_seed, max_infer_samples, global_control=None, local_control=None,
+                 sample_rate=16000, name='WaveNet'):
         """
         Build the computational graph.
         :param waveform_seed: 16-bit or 8-bit waveform, shape:=(batch_size, 1, 1), dtype:=tf.int32
@@ -112,5 +113,5 @@ class WaveNet(Model):
         self.summary = []
         pred_miu_wav = audio.tf_rev_quantize(pred_quantized_miu_wav, bits=hp.waveform_bits)
         self.pred_wav = audio.tf_rev_miu_law(pred_miu_wav, miu=float(hp.waveform_categories - 1))
-        self.summary.append(tf.summary.audio('train/audio', self.pred_wav, sample_rate=hp.sample_rate))
+        self.summary.append(tf.summary.audio('train/audio', self.pred_wav, sample_rate=sample_rate))
 
