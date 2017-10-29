@@ -4,7 +4,8 @@ import tensorflow as tf
 
 def quantize(wav, bits=8):
     max_amp = 1 << (bits - 1)
-    return tf.round(wav * max_amp + max_amp)
+    quantized = np.round(wav * max_amp + max_amp)
+    return quantized.astype(np.int32)
 
 
 def rev_quantize(wav, bits=8):
@@ -30,6 +31,11 @@ def rev_miu_law(wav, miu=255.):
     :return:
     """
     return (np.exp(np.abs(wav) * np.log(1 + miu)) - 1) / miu * np.sign(wav)
+
+
+def tf_quantize(wav, bits=8):
+    max_amp = 1 << (bits - 1)
+    return tf.round(wav * max_amp + max_amp)
 
 
 def tf_miu_law(wav, miu=255.):

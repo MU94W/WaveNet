@@ -1,8 +1,9 @@
 import tensorflow as tf
 from TFCommon.Model import Model
 from TFCommon.Layers import EmbeddingLayer
-from .. import hyperparameter as hp
-from .. import audio
+from tensorflow.python.ops import array_ops
+from WaveNet import hyperparameter as hp
+from WaveNet import audio
 
 
 def dilated_causal_conv1d(x, dilation_rate):
@@ -48,12 +49,13 @@ def build_blocks(x, dilation_rate_lst_blocks):
 
 
 class WaveNet(Model):
-    def __init__(self, waveform, global_control=None, local_control=None, name='WaveNet'):
+    def __init__(self, waveform, waveform_lens, global_condition=None, local_condition=None, name='WaveNet'):
         """
         Build the computational graph.
         :param waveform: 16-bit or 8-bit waveform, shape:=(batch_size, time_steps, 1), dtype:=tf.int32
-        :param global_control: shape:=(batch_size, feature_dim), dtype:=tf.float32
-        :param local_control: shape:=(batch_size, time_steps, feature_dim), dtype:=tf.float32
+        :param waveform_lens: shape:=(batch_size,), dtype:tf.int32
+        :param global_condition: shape:=(batch_size, feature_dim), dtype:=tf.float32
+        :param local_condition: shape:=(batch_size, time_steps, feature_dim), dtype:=tf.float32
         :return:
         """
         super(WaveNet, self).__init__(name)
@@ -68,14 +70,21 @@ class WaveNet(Model):
             hid_out_0 = tf.layers.dense(skip_out, units=hp.waveform_categories, activation=tf.nn.relu)
         with tf.variable_scope('hid_out_1'):
             hid_out_1 = tf.layers.dense(hid_out_0, units=hp.waveform_categories, activation=None)
-        self.loss = tf.losses.sparse_softmax_cross_entropy(labels=waveform, logits=hid_out_1)
+        waveform_mask = tf.expand_dims(array_ops.sequence_mask(waveform_lens,
+                                                               tf.shape(waveform)[1],
+                                                               dtype=tf.float32), axis=-1)
+        self.loss = tf.losses.sparse_softmax_cross_entropy(labels=waveform,
+                                                           logits=hid_out_1,
+                                                           weights=waveform_mask)
         self.global_step = tf.Variable(0, name='global_step')
 
-        self.summary = []
         softmax_score = tf.nn.softmax(logits=hid_out_1[:1], dim=-1)
         quantized_miu_wav = tf.argmax(softmax_score, axis=-1)
         miu_wav = audio.tf_rev_quantize(quantized_miu_wav, bits=hp.waveform_bits)
         self.pred_wav = audio.tf_rev_miu_law(miu_wav, miu=float(hp.waveform_categories - 1))
-        self.summary.append(tf.summary.scalar('train/loss', self.loss))
-        self.summary.append(tf.summary.audio('train/audio', self.pred_wav, sample_rate=hp.sample_rate))
+        summary = [tf.summary.scalar('train/loss', self.loss),
+                   tf.summary.audio('train/audio', self.pred_wav, sample_rate=hp.sample_rate)]
+        self.summary_loss = summary[0]
+        self.summary_audio = summary[1]
+        self.summary = tf.summary.merge(summary)
 

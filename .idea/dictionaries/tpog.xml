@@ -2,12 +2,15 @@
   <dictionary name="tpog">
     <words>
       <w>argmax</w>
+      <w>ckpt</w>
       <w>conv</w>
       <w>dtype</w>
       <w>logits</w>
+      <w>pbar</w>
       <w>pred</w>
       <w>resi</w>
       <w>softmax</w>
+      <w>vocoder</w>
     </words>
   </dictionary>
 </component>

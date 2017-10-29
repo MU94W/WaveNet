@@ -1,7 +1,7 @@
 import tensorflow as tf
 from TFCommon.Model import Model
-from .. import hyperparameter as hp
-from .. import audio
+from WaveNet import hyperparameter as hp
+from WaveNet import audio
 
 
 def sample_by_logits(logits, sample_type='prob'):
