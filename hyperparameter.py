@@ -8,3 +8,6 @@ kernel_size = (2, 1)    # use tf.layers.conv2d
 dilation_rate_lst_blocks = [[(1 << l, 1) for l in range(c_l)] for c_l in conv_layers]
 dilation_channels = 16
 skip_dims = 16
+dilated_causal_use_bias = False
+residual_use_bias = False
+skip_use_bias = False
