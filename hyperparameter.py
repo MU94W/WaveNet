@@ -1,0 +1,10 @@
+sample_rate = 24000
+waveform_bits = 8
+waveform_categories = 1 << waveform_bits
+waveform_center_cat = 1 << (waveform_bits - 1)
+residual_blocks = 2
+conv_layers = [8] * residual_blocks
+kernel_size = (2, 1)    # use tf.layers.conv2d
+dilation_rate_lst_blocks = [[(1 << l, 1) for l in range(c_l)] for c_l in conv_layers]
+dilation_channels = 16
+skip_dims = 16
