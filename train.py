@@ -46,9 +46,12 @@ def main():
     with tf.variable_scope('model'):
         model = WaveNet(*train_feeder.fed_holders, sample_rate=train_meta['sr'])
         with tf.variable_scope('optimizer'):
-            opt = tf.train.AdamOptimizer()
-            grads_and_vars = opt.compute_gradients(model.loss)
-            upd = opt.apply_gradients(grads_and_vars, global_step=model.global_step)
+            opt = tf.train.AdamOptimizer(hp.learning_rate)
+            grad, var = zip(*opt.compute_gradients(model.loss))
+            clipped_grad, global_norm = tf.clip_by_global_norm(grad, hp.clip_norm)
+            upd = opt.apply_gradients(zip(clipped_grad, var), global_step=model.global_step)
+            model.summary_norm = tf.summary.scalar('train/norm', global_norm)
+            model.summary_scalar = tf.summary.merge([model.summary_loss, model.summary_norm])
 
     saver = tf.train.Saver()
 
@@ -75,7 +78,7 @@ def main():
                 global_step_eval += 1
                 pbar.update(1)
                 if global_step_eval % 10 == 0:
-                    summary_eval = sess.run(model.summary_loss)
+                    summary_eval = sess.run(model.summary_scalar)
                     writer.add_summary(summary_eval, global_step_eval)
                 if global_step_eval % 1000 == 0:
                     summary_eval = sess.run(model.summary_audio)

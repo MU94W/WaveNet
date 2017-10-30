@@ -60,7 +60,7 @@ class WaveNet(Model):
         :return:
         """
         super(WaveNet, self).__init__(name)
-        left_pad_go = hp.waveform_center_cat + tf.zeros(shape=(tf.shape(waveform)[0], 1, 1), dtype=tf.int32)
+        left_pad_go = tf.cast(tf.fill((tf.shape(waveform)[0], 1, 1), hp.waveform_center_cat), dtype=tf.int32)
         input_waveform = tf.concat([left_pad_go, waveform[:, :-1, :]], axis=1)
         waveform_embed = EmbeddingLayer(classes=hp.waveform_categories,
                                         size=hp.dilation_channels)(input_waveform,

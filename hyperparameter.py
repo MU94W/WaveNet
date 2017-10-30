@@ -11,8 +11,10 @@ dilated_causal_use_bias = False
 residual_use_bias = False
 skip_use_bias = False
 
-batch_size = 32
+batch_size = 4
 split_nums = 32
+learning_rate = 0.001
+clip_norm = 1.
 max_global_steps = 1E5
 train_meta_path = './train_meta.pkl'
 log_dir = './log'
