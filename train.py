@@ -17,7 +17,10 @@ def get_arguments():
 
 def main():
     args = get_arguments()
-    hp = HyperParams(param_json_path=args.hyper_param_path)
+    if hasattr(args, 'hyper_param_path'):
+        hp = HyperParams(param_json_path=args.hyper_param_path)
+    else:
+        hp = HyperParams()
 
     coord = tf.train.Coordinator()
 
