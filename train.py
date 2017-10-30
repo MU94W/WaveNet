@@ -40,18 +40,20 @@ def main():
 
     with tf.variable_scope('model'):
         model = WaveNet(*train_feeder.fed_holders, hyper_params=hp, sample_rate=train_meta['sr'])
-        with tf.variable_scope('optimizer'):
-            opt = tf.train.AdamOptimizer(hp.learning_rate)
-            grad, var = zip(*opt.compute_gradients(model.loss))
-            clipped_grad, global_norm = tf.clip_by_global_norm(grad, hp.clip_norm)
-            upd = opt.apply_gradients(zip(clipped_grad, var), global_step=model.global_step)
-            model.summary_norm = tf.summary.scalar('train/norm', global_norm)
-            model.summary_scalar = tf.summary.merge([model.summary_loss, model.summary_norm])
+    with tf.variable_scope('optimizer'):
+        opt = tf.train.AdamOptimizer(hp.learning_rate)
+        grad, var = zip(*opt.compute_gradients(model.loss))
+        clipped_grad, global_norm = tf.clip_by_global_norm(grad, hp.clip_norm)
+        upd = opt.apply_gradients(zip(clipped_grad, var), global_step=model.global_step)
+        model.summary_norm = tf.summary.scalar('train/norm', global_norm)
+        model.summary_scalar = tf.summary.merge([model.summary_loss, model.summary_norm])
 
     saver = tf.train.Saver()
 
     config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
+    #config.gpu_options.allow_growth = True
+    config.intra_op_parallelism_threads = 0
+    config.inter_op_parallelism_threads = 0
     with tf.Session(config=config) as sess:
         model.sess = sess
         train_feeder.start_in_session(sess)

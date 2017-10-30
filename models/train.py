@@ -36,7 +36,7 @@ def residual_block(x, block_layers, hyper_params):
             conv_res_out, conv_skip_out = dilated_causal_conv1d(last_out, 1 << layer_idx, hyper_params)
             last_out = conv_res_out
             skip_out_lst.append(conv_skip_out)
-    return last_out, skip_out_lst
+    return last_out, tf.add_n(skip_out_lst)
 
 
 def build_blocks(x, hyper_params):
@@ -44,10 +44,10 @@ def build_blocks(x, hyper_params):
     skip_out_lst = []
     for block_idx, block_layers in enumerate(hyper_params.conv_layers):
         with tf.variable_scope('block_{}'.format(block_idx)):
-            resi_out, skip_out_lst = residual_block(last_out, block_layers, hyper_params)
+            resi_out, skip_out = residual_block(last_out, block_layers, hyper_params)
             last_out = resi_out
-            skip_out_lst.extend(skip_out_lst)
-    return tf.nn.relu(tf.add_n(skip_out_lst))
+            skip_out_lst.append(skip_out)
+    return tf.add_n(skip_out_lst)
 
 
 class WaveNet(Model):
@@ -73,7 +73,7 @@ class WaveNet(Model):
                                         size=self.hyper_params.dilation_channels)(input_waveform,
                                                                                   scope='waveform_embedding_lookup')
         with tf.variable_scope('stacked_conv_blocks'):
-            skip_out = build_blocks(waveform_embed, self.hyper_params)
+            skip_out = tf.nn.relu(build_blocks(waveform_embed, self.hyper_params))
         with tf.variable_scope('pred_out'):
             with tf.variable_scope('hid_out_0'):
                 hid_out_0 = tf.layers.dense(skip_out,
