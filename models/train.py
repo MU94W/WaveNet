@@ -30,24 +30,24 @@ def dilated_causal_conv1d(x, dilation_rate, hyper_params):
 
 def residual_block(x, block_layers, hyper_params):
     last_out = x
-    skip_out = 0
+    skip_out_lst = []
     for layer_idx in range(block_layers):
         with tf.variable_scope('residual_layer_{}'.format(layer_idx)):
             conv_res_out, conv_skip_out = dilated_causal_conv1d(last_out, 1 << layer_idx, hyper_params)
             last_out = conv_res_out
-            skip_out += conv_skip_out
-    return last_out, skip_out
+            skip_out_lst.append(conv_skip_out)
+    return last_out, skip_out_lst
 
 
 def build_blocks(x, hyper_params):
     last_out = x
-    skip_out_sum = 0
+    skip_out_lst = []
     for block_idx, block_layers in enumerate(hyper_params.conv_layers):
         with tf.variable_scope('block_{}'.format(block_idx)):
-            resi_out, skip_out = residual_block(last_out, block_layers, hyper_params)
+            resi_out, skip_out_lst = residual_block(last_out, block_layers, hyper_params)
             last_out = resi_out
-            skip_out_sum += skip_out
-    return tf.nn.relu(skip_out_sum)
+            skip_out_lst.extend(skip_out_lst)
+    return tf.nn.relu(tf.add_n(skip_out_lst))
 
 
 class WaveNet(Model):
@@ -94,7 +94,7 @@ class WaveNet(Model):
         self.global_step = tf.Variable(0, name='global_step')
 
         # summary [begin]
-        softmax_score = tf.nn.softmax(logits=tf.squeeze(hid_out_1)[:1], dim=-1)
+        softmax_score = tf.nn.softmax(logits=hid_out_1[:1, :, :, :], dim=-1)
         quantized_miu_wav = tf.argmax(softmax_score, axis=-1)
         miu_wav = audio.tf_rev_quantize(quantized_miu_wav, bits=self.hyper_params.waveform_bits)
         self.pred_wav = audio.tf_rev_miu_law(miu_wav, miu=float(self.hyper_params.waveform_categories - 1))
