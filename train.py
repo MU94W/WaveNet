@@ -50,7 +50,9 @@ def main():
 
     saver = tf.train.Saver()
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
         model.sess = sess
         train_feeder.start_in_session(sess)
 
