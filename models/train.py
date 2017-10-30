@@ -4,6 +4,7 @@ from TFCommon.Layers import EmbeddingLayer
 from tensorflow.python.ops import array_ops
 from WaveNet import hyperparameter as hp
 from WaveNet import audio
+from hyperparameter import HyperParams
 
 
 def dilated_causal_conv1d(x, dilation_rate):
@@ -49,17 +50,24 @@ def build_blocks(x, dilation_rate_lst_blocks):
 
 
 class WaveNet(Model):
-    def __init__(self, waveform, waveform_lens, global_condition=None, local_condition=None,
+    def __init__(self, waveform, waveform_lens, hyper_params=None, global_condition=None, local_condition=None,
                  sample_rate=16000, name='WaveNet'):
         """
         Build the computational graph.
         :param waveform: 16-bit or 8-bit waveform, shape:=(batch_size, time_steps, 1), dtype:=tf.int32
         :param waveform_lens: shape:=(batch_size,), dtype:tf.int32
+        :param hyper_params: instance of HyperParams
         :param global_condition: shape:=(batch_size, feature_dim), dtype:=tf.float32
         :param local_condition: shape:=(batch_size, time_steps, feature_dim), dtype:=tf.float32
         :return:
         """
         super(WaveNet, self).__init__(name)
+        if hyper_params is None:
+            self.hyper_params = HyperParams()
+        else:
+            self.hyper_params = hyper_params
+
+
         left_pad_go = hp.waveform_center_cat + tf.zeros(shape=(tf.shape(waveform)[0], 1, 1), dtype=tf.int32)
         input_waveform = tf.concat([left_pad_go, waveform[:, :-1, :]], axis=1)
         waveform_embed = EmbeddingLayer(classes=hp.waveform_categories,
