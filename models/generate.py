@@ -99,7 +99,7 @@ class WaveNet(Model):
                         res_out, skip_out = res_block(x_cur)
                         x_cur = res_out
                         skip_out_sum += skip_out
-            pred_sample = skip_infer_next(skip_out_sum)
+            pred_sample = skip_infer_next(tf.nn.relu(skip_out_sum))
             out_sample_tensor_arr = out_sample_tensor_arr.write(this_time, pred_sample)
             return tf.add(this_time, 1), pred_sample, out_sample_tensor_arr
 

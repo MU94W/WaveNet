@@ -3,8 +3,8 @@ import tensorflow as tf
 
 
 def quantize(wav, bits=8):
-    max_amp = 1 << (bits - 1)
-    quantized = np.round(wav * max_amp + max_amp)
+    interval = 2. / (1 << bits)
+    quantized = np.ceil((wav + 1.) / interval) - 1.
     return quantized.astype(np.int32)
 
 
@@ -34,8 +34,9 @@ def rev_miu_law(wav, miu=255.):
 
 
 def tf_quantize(wav, bits=8):
-    max_amp = 1 << (bits - 1)
-    return tf.round(wav * max_amp + max_amp)
+    interval = 2 / (1 << bits)
+    quantized = tf.ceil((wav + 1) / interval) - 1
+    return tf.cast(quantized, tf.int32)
 
 
 def tf_miu_law(wav, miu=255.):

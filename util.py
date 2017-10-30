@@ -17,7 +17,7 @@ class Feeder(BaseFeeder):
         len_batch = np.asarray([len(item) for item in batch], dtype=np.int32)
         max_len = np.max(len_batch)
         wav_batch = np.asarray([np.pad(item, (0, max_len - item_len),
-                                       mode='constant', constant_values=hp.waveform_center_cat)
+                                       mode='constant', constant_values=0.)
                                 for item, item_len in zip(batch, len_batch)])
         wav_batch = np.expand_dims(wav_batch, axis=-1)
         wav_batch = audio.quantize(audio.miu_law(wav_batch))
