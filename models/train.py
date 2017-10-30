@@ -45,7 +45,7 @@ def build_blocks(x, dilation_rate_lst_blocks):
             resi_out, skip_out = residual_block(last_out, dilation_rate_lst)
             last_out = resi_out
             skip_out_sum += skip_out
-    return skip_out_sum
+    return tf.nn.relu(skip_out_sum)
 
 
 class WaveNet(Model):
