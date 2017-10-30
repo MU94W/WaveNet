@@ -1,8 +1,10 @@
 from TFCommon.DataFeeder import BaseFeeder
 from six.moves import xrange
-import librosa, os, audio, random
+import librosa
+import os
+import random
+import audio
 import numpy as np
-import hyperparameter as hp
 
 
 class Feeder(BaseFeeder):

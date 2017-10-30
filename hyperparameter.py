@@ -1,42 +1,42 @@
-import copy
 import json
 import codecs
 import os
 
 
-global_param_dict = {'waveform_bits': 8,
-                     'waveform_categories': 1 << 8,
-                     'waveform_center_cat': 1 << 7,
-                     'conv_layers': [8] * 2,
-                     'kernel_size': (2, 1),
-                     'dilation_channels': 32,
-                     'skip_dims': 32,
-                     'dilated_casual_use_bias': False,
-                     'residual_use_bias': False,
-                     'skip_use_bias': False,
-                     'batch_size': 4,
-                     'split_nums': 16,
-                     'max_global_steps': 1E5,
-                     'train_meta_path': './train_meta.pkl',
-                     'log_dir': './log',
-                     'save_path': './save'}
-
-
 class HyperParams:
     def __init__(self, param_dict=None, param_json_path=None):
+        self.waveform_bits = 8
+        self.waveform_categories = 1 << self.waveform_bits
+        self.waveform_center_cat = 1 << (self.waveform_bits - 1)
+        self.conv_layers = [8] * 2
+        self.kernel_size = 2
+        self.dilation_channels = 128
+        self.skip_dims = 128
+        self.dilated_causal_use_bias = False
+        self.residual_use_bias = False
+        self.skip_use_bias = False
+        self.learning_rate = 0.001
+        self.clip_norm = 1.
+        self.batch_size = 4
+        self.split_nums = 16
+        self.max_global_steps = 1E5
+        self.train_meta_path = './train_meta.pkl'
+        self.log_dir = './log'
+        self.save_path = './save'
         if isinstance(param_dict, dict):
-            self._init_from_dict(param_dict)
+            self._update_from_dict(param_dict)
         elif isinstance(param_json_path, str) and os.path.exists(param_json_path):
             with codecs.open(param_json_path, 'r', encoding='utf-8') as f:
                 param_dict = json.load(f)
-            self._init_from_dict(param_dict)
+            self._update_from_dict(param_dict)
+        else:
+            print('Use default setup.')
 
-    def _init_from_dict(self, param_dict):
-        valid_keys = global_param_dict.keys()
-        tmp_dict = copy.deepcopy(global_param_dict)
+    def _update_from_dict(self, param_dict):
         for k, v in param_dict.items():
-            if k in valid_keys:
-                if isinstance(type(v), type(tmp_dict[k])):
-                    tmp_dict[k] = v
-        for k, v in tmp_dict.items():
+            assert hasattr(self, k),\
+                '[E] param: \"{}\" is not valid.'.format(k)
+            assert isinstance(type(v), type(getattr(self, k))),\
+                '[E] param: \"{}\" should have type: \"{}\", ' \
+                'while got type: \"{}\".'.format(k, type(getattr(self, k)), type(v))
             setattr(self, k, v)
