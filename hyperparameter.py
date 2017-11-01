@@ -5,16 +5,17 @@ import os
 
 class HyperParams:
     def __init__(self, param_dict=None, param_json_path=None):
+        self.sample_rate = 16000
         self.waveform_bits = 8
         self.waveform_categories = 1 << self.waveform_bits
         self.waveform_center_cat = 1 << (self.waveform_bits - 1)
-        self.conv_layers = [8] * 4
+        self.dilation_blocks = [10] * 1
         self.kernel_size = 2
-        self.dilation_channels = 32
-        self.skip_dims = 512
-        self.dilated_causal_use_bias = False
-        self.residual_use_bias = False
-        self.skip_use_bias = False
+        self.residual_channels = 32
+        self.skip_dims = 256
+        self.dilated_causal_use_bias = True
+        self.residual_use_bias = True
+        self.skip_use_bias = True
         self.learning_rate = 0.001
         self.clip_norm = 1.
         self.batch_size = 1

@@ -4,7 +4,8 @@ import tensorflow as tf
 
 def quantize(wav, bits=8):
     interval = 2. / (1 << bits)
-    quantized = np.ceil((wav + 1.) / interval) - 1.
+    epsilon = 1E-4
+    quantized = np.ceil((np.clip(wav, epsilon-1, 1-epsilon) + 1.) / interval) - 1.
     return quantized.astype(np.int32)
 
 

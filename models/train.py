@@ -1,15 +1,23 @@
 import tensorflow as tf
 from tensorflow.python.ops import array_ops
-from TFCommon.Layers import EmbeddingLayer
 from TFCommon.Model import Model
-from WaveNet import audio
-from WaveNet.hyperparameter import HyperParams
+import audio
+from hyperparameter import HyperParams
+
+
+def causal_conv1d(x, hyper_params):
+    left_pad_tensor = tf.zeros(shape=(tf.shape(x)[0], 1, 1, hyper_params.waveform_categories))
+    padded_x = tf.concat([left_pad_tensor, x], axis=1)
+    conv_out = tf.layers.conv2d(inputs=padded_x, filters=hyper_params.residual_channels,
+                                kernel_size=(hyper_params.kernel_size, 1), strides=1,
+                                padding='VALID', use_bias=hyper_params.dilated_causal_use_bias)
+    return conv_out
 
 
 def dilated_causal_conv1d(x, dilation_rate, hyper_params):
-    left_pad_tensor = tf.zeros(shape=(tf.shape(x)[0], dilation_rate, 1, hyper_params.dilation_channels))
+    left_pad_tensor = tf.zeros(shape=(tf.shape(x)[0], dilation_rate, 1, hyper_params.residual_channels))
     padded_x = tf.concat([left_pad_tensor, x], axis=1)
-    conv_hid_0 = tf.layers.conv2d(inputs=padded_x, filters=2 * hyper_params.dilation_channels,
+    conv_hid_0 = tf.layers.conv2d(inputs=padded_x, filters=2 * hyper_params.residual_channels,
                                   kernel_size=(hyper_params.kernel_size, 1), strides=1,
                                   padding='VALID', dilation_rate=(dilation_rate, 1),
                                   use_bias=hyper_params.dilated_causal_use_bias)
@@ -17,7 +25,7 @@ def dilated_causal_conv1d(x, dilation_rate, hyper_params):
     conv_hid_1 = tf.nn.tanh(conv_hid_0_l) * tf.nn.sigmoid(conv_hid_0_r)
     with tf.variable_scope('residual_out'):
         conv_res_out = tf.identity(x) + tf.layers.dense(conv_hid_1,
-                                                        units=hyper_params.dilation_channels,
+                                                        units=hyper_params.residual_channels,
                                                         activation=None,
                                                         use_bias=hyper_params.residual_use_bias)
     with tf.variable_scope('skip_connection'):
@@ -42,7 +50,7 @@ def residual_block(x, block_layers, hyper_params):
 def build_blocks(x, hyper_params):
     last_out = x
     skip_out_lst = []
-    for block_idx, block_layers in enumerate(hyper_params.conv_layers):
+    for block_idx, block_layers in enumerate(hyper_params.dilation_blocks):
         with tf.variable_scope('block_{}'.format(block_idx)):
             resi_out, skip_out = residual_block(last_out, block_layers, hyper_params)
             last_out = resi_out
@@ -66,14 +74,17 @@ class WaveNet(Model):
         self.hyper_params = HyperParams() if hyper_params is None else hyper_params
 
         with tf.variable_scope('shift_input'):
-            left_pad_go = tf.cast(tf.fill(dims=(tf.shape(waveform)[0], 1, 1),
-                                          value=self.hyper_params.waveform_center_cat), tf.int32)
-            input_waveform = tf.concat([left_pad_go, waveform[:, :-1, :]], axis=1)
-        waveform_embed = EmbeddingLayer(classes=self.hyper_params.waveform_categories,
-                                        size=self.hyper_params.dilation_channels)(input_waveform,
-                                                                                  scope='waveform_embedding_lookup')
+            waveform_one_hot = tf.one_hot(waveform, depth=self.hyper_params.waveform_categories,
+                                          on_value=1., off_value=0., dtype=tf.float32)
+            left_pad_go = tf.one_hot(indices=[[[self.hyper_params.waveform_center_cat]]],
+                                     depth=self.hyper_params.waveform_categories,
+                                     on_value=1., off_value=0., dtype=tf.float32)
+            left_pad_go_batch = tf.tile(left_pad_go, [tf.shape(waveform)[0], 1, 1, 1]) #  for <go>
+            input_waveform = tf.concat([left_pad_go_batch, waveform_one_hot[:, :-1, :, :]], axis=1)    # only drop for <go>
+        with tf.variable_scope('init_causal'):
+            feed_for_dilated_blocks = causal_conv1d(input_waveform, hyper_params)
         with tf.variable_scope('stacked_conv_blocks'):
-            skip_out = tf.nn.relu(build_blocks(waveform_embed, self.hyper_params))
+            skip_out = tf.nn.relu(build_blocks(feed_for_dilated_blocks, self.hyper_params))
         with tf.variable_scope('pred_out'):
             with tf.variable_scope('hid_out_0'):
                 hid_out_0 = tf.layers.dense(skip_out,
