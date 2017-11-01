@@ -51,9 +51,9 @@ def main():
     saver = tf.train.Saver()
 
     config = tf.ConfigProto()
-    #config.gpu_options.allow_growth = True
-    config.intra_op_parallelism_threads = 0
-    config.inter_op_parallelism_threads = 0
+    config.gpu_options.allow_growth = True
+    #config.intra_op_parallelism_threads = 0
+    #config.inter_op_parallelism_threads = 0
     with tf.Session(config=config) as sess:
         model.sess = sess
         train_feeder.start_in_session(sess)
