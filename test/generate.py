@@ -10,8 +10,8 @@ from hyperparameter import HyperParams
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Train the WaveNet neural vocoder!')
-    parser.add_argument('--gen_samples', type=int, default=1,
-                        help='randomly generate [gen_samples] waves. Default: {}'.format(3))
+    parser.add_argument('--gen_samples', type=int, default=10,
+                        help='randomly generate [gen_samples] waves. Default: {}'.format(10))
     parser.add_argument('--max_infer_samples', type=int, default=5E5)
     parser.add_argument('--hyper_param_path', type=str, default='./hyper_param.json',
                         help='json: hyper_param')
