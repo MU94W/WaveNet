@@ -1,5 +1,4 @@
 import tensorflow as tf
-from TFCommon.Layers import EmbeddingLayer
 from TFCommon.Model import Model
 from tensorflow.python.ops import array_ops
 
