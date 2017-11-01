@@ -1,9 +1,8 @@
+import audio
 import tensorflow as tf
 from TFCommon.Model import Model
-from tensorflow.python.ops import array_ops
-
-import audio
 from hyperparameter import HyperParams
+from tensorflow.python.ops import array_ops
 
 
 def sample_by_logits(logits, sample_type='prob'):
