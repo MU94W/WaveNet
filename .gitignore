@@ -8,6 +8,8 @@ __pycache__/
 
 # Pycharm
 /.idea/
+/.idea/*.iml
+/.idea/*.xml
 
 # Distribution / packaging
 .Python
