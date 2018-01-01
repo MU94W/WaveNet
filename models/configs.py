@@ -30,8 +30,8 @@ class ConfigV1(object):
             # 1st. build the initial causal layer.
             with tf.variable_scope("init_causal_layer"):
                 # 1st. right shift.
-                right_shift_wav_indices = tf.pad(wav_indices, [[0, 0], [self.conv_width - 1, 0]], constant_values=self.central_class)
-                right_shift_wav_indices = tf.slice(right_shift_wav_indices, [0, 0], [0, tf.shape(wav)[1]])
+                right_shift_wav_indices = tf.slice(wav_indices, [0, 0], [-1, tf.shape(wav)[1] - (self.conv_width - 1)])
+                right_shift_wav_indices = tf.pad(right_shift_wav_indices, [[0, 0], [self.conv_width - 1, 0]], constant_values=self.central_class)
                 # 2nd. to one-hot representation
                 wav_one_hot = tf.one_hot(right_shift_wav_indices, depth=self.sample_classes, dtype=tf.float32)
                 # 3rd. calculate
@@ -92,7 +92,7 @@ class ConfigV2(object):
             wav = inputs["wav"]
             mu_wav = mu_law(wav)
             wav_indices = tf.cast(mu_wav + 128., dtype=tf.int32)
-            target_indices = tf.slice(wav_indices, [0, self.reception_fields], [0, -1])
+            target_indices = tf.slice(wav_indices, [0, self.reception_fields], [-1, -1])
 
             # 1st. build the initial causal layer.
             with tf.variable_scope("init_causal_layer"):
