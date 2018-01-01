@@ -45,6 +45,7 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
         deque_out = queue.dequeue()
         deque_out = deque_out if width > 2 else [deque_out]
         concat_inputs = tf.concat(deque_out + [inputs], axis=1)
+        concat_inputs.set_shape(shape=(inputs.get_shape()[0].value, width, channels_in))
 
         # get outputs.
         conv_out = tf.nn.conv1d(value=concat_inputs, filters=kernel, stride=1, padding="VALID")
