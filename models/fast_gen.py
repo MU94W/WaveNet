@@ -45,15 +45,15 @@ def main():
 
         global_step_eval = sess.run(global_step)
         samples_batch = np.zeros(shape=(args.batch_size, 1), dtype=np.float32)
-        samples_batch_time_lst = []
-        for _ in tqdm.trange(args.gen_samples):
+        audio_batch = np.empty(shape=(args.batch_size, args.gen_samples), dtype=np.float32)
+        for idx in tqdm.trange(args.gen_samples):
             samples_batch = sess.run(net_tensor_dic["synthesized_samples"], feed_dict={wav_placeholder: samples_batch})
-            samples_batch_time_lst.append(samples_batch_time_lst)
+            audio_batch[:, idx] = samples_batch[:, 0]
 
     # save syn-ed audios
     if not os.path.exists(args.gen_path) or not os.path.isdir(args.gen_path):
         os.makedirs(args.gen_path)
-    audio_batch = np.int16(np.concatenate(samples_batch_time_lst, axis=1) * (1 << 15))
+    audio_batch = np.int16(audio_batch * (1 << 15))
     for idx, audio in enumerate(audio_batch):
         siowav.write(os.path.join(args.gen_path, "{}_{}.wav".format(global_step_eval, idx)),
                      data=audio, rate=args.sample_rate)
