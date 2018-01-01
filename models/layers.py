@@ -13,13 +13,13 @@ def dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="dilated_c
         assert inputs.get_shape().with_rank(3)
         pad_len = (width - 1) * dilation_rate
         padded_inputs = tf.pad(inputs, [[0, 0], [pad_len, 0], [0, 0]])
-        return tf.layers.conv1d(inputs=padded_inputs, kernel_size=width, strides=1, filters=filters, padding="valid")
+        return tf.layers.conv1d(inputs=padded_inputs, dilation_rate=dilation_rate, kernel_size=width, strides=1, filters=filters, padding="valid")
 
 
 def dilated_causal_conv1d_no_pad(inputs, width, dilation_rate, filters, name="dilated_causal_conv1d", reuse=None):
     with tf.variable_scope(name, reuse=reuse):
         assert inputs.get_shape().with_rank(3)
-        return tf.layers.conv1d(inputs=inputs, kernel_size=width, strides=1, filters=filters, padding="valid")
+        return tf.layers.conv1d(inputs=inputs, dilation_rate=dilation_rate, kernel_size=width, strides=1, filters=filters, padding="valid")
 
 
 def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="dilated_causal_conv1d", reuse=None):
