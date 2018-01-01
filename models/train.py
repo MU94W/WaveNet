@@ -22,7 +22,7 @@ def get_args():
 
 def main():
     args = get_args()
-    net = ConfigV2()
+    net = ConfigV1()
     graph = tf.Graph()
     with graph.as_default():
         with tf.variable_scope("data"):
