@@ -30,12 +30,11 @@ class ConfigV1(object):
             # 1st. build the initial causal layer.
             with tf.variable_scope("init_causal_layer"):
                 # 1st. right shift.
-                right_shift_wav_indices = tf.pad(wav_indices, [[0, 0], [1, 0]], constant_values=self.central_class)
+                right_shift_wav_indices = tf.pad(wav_indices[:, :-1], [[0, 0], [1, 0]], constant_values=self.central_class)
                 # 2nd. to one-hot representation
                 wav_one_hot = tf.one_hot(right_shift_wav_indices, depth=self.sample_classes, dtype=tf.float32)
                 # 3rd. calculate
                 init_causal_out = dilated_causal_conv1d(inputs=wav_one_hot, dilation_rate=1, filters=self.residual_units, width=self.conv_width)
-                print(init_causal_out.shape.as_list())
 
             # 2nd. build the dilated causal blocks.
             with tf.variable_scope("dilated_causal_blocks"):
@@ -47,7 +46,6 @@ class ConfigV1(object):
                             with tf.variable_scope("layer_{}".format(idy)):
                                 conv_out = dilated_causal_conv1d(inputs=resi_out, dilation_rate=self.dilation_base ** idy,
                                                                  filters=2*self.residual_units, width=self.conv_width)
-                                print(conv_out.shape.as_list())
                                 acti_out = self_gated_layer(inputs=conv_out)
                                 resi_out += tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="residual_out")
                                 skip_out += tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="skip_out")
