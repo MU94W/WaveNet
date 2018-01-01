@@ -52,7 +52,7 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
         out = tf.nn.bias_add(conv_out, bias)
 
         # update op.
-        upd_op = queue.enqueue(deque_out[1:] + [out])
+        upd_op = queue.enqueue(deque_out[1:] + [inputs])
 
         with tf.control_dependencies([upd_op]):
             controlled_out = tf.identity(out)
