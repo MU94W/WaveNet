@@ -12,8 +12,8 @@ def get_args():
     parser.add_argument("--save_path", type=str, default="./save/")
     parser.add_argument("--log_path", type=str, default="./log")
     parser.add_argument("--steps", type=int, default=200000)
-    parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--crop_length", type=int, default=16000)
+    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--crop_length", type=int, default=8000)
     parser.add_argument("--sample_rate", type=int, default=16000)
     parser.add_argument("--add_audio_summary_per_steps", type=int, default=50)
     parser.add_argument("--save_per_steps", type=int, default=2000)
@@ -49,7 +49,12 @@ def main():
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     with tf.Session(graph=graph, config=config) as sess:
-        sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
+        # get checkpoint
+        ckpt = tf.train.get_checkpoint_state(args.save_path)
+        if ckpt:
+            saver.restore(sess=sess, save_path=ckpt.model_checkpoint_path)
+        else:
+            sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         summary_writer = tf.summary.FileWriter(args.log_path)
         save_path = os.path.join(args.save_path, net.name)
