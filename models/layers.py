@@ -44,7 +44,7 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
         concat_inputs = tf.concat(deque_out + [inputs], axis=1)
 
         # get outputs.
-        conv_out = tf.nn.conv1d(value=concat_inputs, filters=kernel, stride=1, padding="valid")
+        conv_out = tf.nn.conv1d(value=concat_inputs, filters=kernel, stride=1, padding="VALID")
         out = tf.nn.bias_add(conv_out, bias)
 
         # update op.
