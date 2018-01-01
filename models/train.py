@@ -59,7 +59,10 @@ def main():
         summary_writer = tf.summary.FileWriter(args.log_path)
         save_path = os.path.join(args.save_path, net.name)
 
-        for idx in tqdm.tqdm(range(args.steps)):
+        global_step_eval = sess.run(global_step)
+        pbar = tqdm.tqdm(total=args.steps)
+        pbar.update(global_step_eval)
+        while global_step_eval < args.steps:
             loss_summary_eval, audio_summary_eval, global_step_eval, _ = sess.run([loss_summary, audio_summary, global_step, upd])
             summary_writer.add_summary(loss_summary_eval, global_step=global_step_eval)
             if global_step_eval % args.add_audio_summary_per_steps == 0:
@@ -68,6 +71,7 @@ def main():
                 if not os.path.exists(args.save_path) or not os.path.isdir(args.save_path):
                     os.makedirs(args.save_path)
                 saver.save(sess=sess, save_path=save_path, global_step=global_step_eval)
+            pbar.update(1)
         summary_writer.close()
 
     print("Congratulations!")
