@@ -23,7 +23,7 @@ def main():
     graph = tf.Graph()
     with graph.as_default():
         with tf.variable_scope("data"):
-            wav_placeholder = tf.placeholder(shape=(args.batch_size, 1), dtype=tf.int32)
+            wav_placeholder = tf.placeholder(shape=(args.batch_size, 1), dtype=tf.float32)
             inputs = {"wav": wav_placeholder}
         # build net.
         net_tensor_dic = net.build(inputs=inputs)
