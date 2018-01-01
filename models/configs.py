@@ -92,11 +92,12 @@ class ConfigV2(object):
             mu_wav = mu_law(wav)
             wav_indices = tf.cast(mu_wav + 128., dtype=tf.int32)
             target_indices = tf.slice(wav_indices, [0, self.reception_fields], [-1, -1])
+            input_indices = wav_indices[:, :-1]
 
             # 1st. build the initial causal layer.
             with tf.variable_scope("init_causal_layer"):
                 # 1st. to one-hot representation
-                wav_one_hot = tf.one_hot(wav_indices, depth=self.sample_classes, dtype=tf.float32)
+                wav_one_hot = tf.one_hot(input_indices, depth=self.sample_classes, dtype=tf.float32)
                 # 2nd. calculate
                 init_causal_out = dilated_causal_conv1d_no_pad(inputs=wav_one_hot, dilation_rate=1, filters=self.residual_units, width=self.conv_width)
 
