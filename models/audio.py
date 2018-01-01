@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 
 def mu_law(x, mu=255, int8=False):
