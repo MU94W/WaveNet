@@ -46,7 +46,7 @@ def main():
         global_step_eval = sess.run(global_step)
         samples_batch = np.zeros(shape=(args.batch_size, 1), dtype=np.float32)
         samples_batch_time_lst = []
-        for _ in tqdm.tqdm(total=args.gen_samples):
+        for _ in tqdm.trange(args.gen_samples):
             samples_batch = sess.run(net_tensor_dic["synthesized_samples"], feed_dict={wav_placeholder: samples_batch})
             samples_batch_time_lst.append(samples_batch_time_lst)
 
