@@ -22,7 +22,7 @@ def get_args():
 
 def main():
     args = get_args()
-    net = ConfigV2()
+    net = ConfigV1()
     graph = tf.Graph()
     with graph.as_default():
         with tf.variable_scope("data"):
@@ -48,8 +48,7 @@ def main():
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    sess = tf.Session(graph=graph, config=config)
-    with sess.as_default():
+    with tf.Session(graph=graph, config=config) as sess:
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
 
         summary_writer = tf.summary.FileWriter(args.log_path)
