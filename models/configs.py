@@ -43,11 +43,12 @@ class ConfigV1(object):
                 for idx in range(self.blks):
                     with tf.variable_scope("blk_{}".format(idx)):
                         for idy in range(self.layers_per_blk):
-                            conv_out = dilated_causal_conv1d(inputs=resi_out, dilation_rate=self.dilation_base ** idy,
-                                                             filters=2*self.residual_units, width=self.conv_width)
-                            acti_out = self_gated_layer(inputs=conv_out)
-                            resi_out += tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="residual_out")
-                            skip_out += tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="skip_out")
+                            with tf.variable_scope("layer_{}".format(idy)):
+                                conv_out = dilated_causal_conv1d(inputs=resi_out, dilation_rate=self.dilation_base ** idy,
+                                                                 filters=2*self.residual_units, width=self.conv_width)
+                                acti_out = self_gated_layer(inputs=conv_out)
+                                resi_out += tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="residual_out")
+                                skip_out += tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="skip_out")
 
             # 3rd. calculate probabilities, and get loss.
             with tf.variable_scope("softmax"):
@@ -106,13 +107,14 @@ class ConfigV2(object):
                 for idx in range(self.blks):
                     with tf.variable_scope("blk_{}".format(idx)):
                         for idy in range(self.layers_per_blk):
-                            conv_out = dilated_causal_conv1d_no_pad(inputs=resi_out, dilation_rate=self.dilation_base ** idy,
-                                                                    filters=2*self.residual_units, width=self.conv_width)
-                            acti_out = self_gated_layer(inputs=conv_out)
-                            resi_out = tf.slice(resi_out, [0, tf.shape(resi_out)[1] - tf.shape(acti_out)[1], 0], [-1, -1, -1]) \
-                                       + tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="residual_out")
-                            skip_out = tf.slice(skip_out, [0, tf.shape(skip_out)[1] - tf.shape(acti_out)[1], 0], [-1, -1, -1]) \
-                                       + tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="skip_out")
+                            with tf.variable_scope("layer_{}".format(idy)):
+                                conv_out = dilated_causal_conv1d_no_pad(inputs=resi_out, dilation_rate=self.dilation_base ** idy,
+                                                                        filters=2*self.residual_units, width=self.conv_width)
+                                acti_out = self_gated_layer(inputs=conv_out)
+                                resi_out = tf.slice(resi_out, [0, tf.shape(resi_out)[1] - tf.shape(acti_out)[1], 0], [-1, -1, -1]) \
+                                           + tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="residual_out")
+                                skip_out = tf.slice(skip_out, [0, tf.shape(skip_out)[1] - tf.shape(acti_out)[1], 0], [-1, -1, -1]) \
+                                           + tf.layers.dense(inputs=acti_out, units=self.residual_units, activation=None, name="skip_out")
 
             # 3rd. calculate probabilities, and get loss.
             with tf.variable_scope("softmax"):
