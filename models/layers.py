@@ -26,6 +26,7 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
     with tf.variable_scope(name, reuse=reuse):
         assert inputs.get_shape().with_rank(3)
         assert inputs.get_shape()[1].value == 1
+        assert width >= 2
 
         batch_size = tf.shape(inputs)[0]
         channels_in = inputs.get_shape()[-1].value
@@ -33,7 +34,8 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
         queue = tf.FIFOQueue(capacity=dilation_rate, dtypes=[tf.float32] * (width - 1))
 
         # init op. must be run at the very first.
-        init_op = queue.enqueue_many([[tf.zeros(shape=(batch_size, 1, channels_in), dtype=tf.float32)] * dilation_rate] * (width - 1))
+        init_op = queue.enqueue_many([[tf.zeros(shape=(batch_size, 1, channels_in),
+                                                dtype=tf.float32)] * dilation_rate] * (width - 1))
 
         # get pre-trained weights.
         kernel = tf.get_variable(name="conv1d/kernel", shape=(width, channels_in, filters), dtype=tf.float32)
@@ -41,6 +43,7 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
 
         # get real inputs.
         deque_out = queue.dequeue()
+        deque_out = deque_out if width > 2 else [deque_out]
         concat_inputs = tf.concat(deque_out + [inputs], axis=1)
 
         # get outputs.
