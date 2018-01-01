@@ -4,7 +4,7 @@ import time
 import numpy as np
 import scipy.io.wavfile as siowav
 import tensorflow as tf
-from models.generate import WaveNet
+from models.deprecated_generate import WaveNet
 from hyperparameter import HyperParams
 
 

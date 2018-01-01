@@ -3,7 +3,7 @@ import os
 import pickle as pkl
 import tqdm
 import tensorflow as tf
-from models.train import WaveNet
+from models.deprecated_train import WaveNet
 from util import Feeder
 from hyperparameter import HyperParams
 
