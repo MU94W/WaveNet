@@ -27,7 +27,7 @@ def main():
     with graph.as_default():
         with tf.variable_scope("data"):
             dataset = get_dataset(args.data_path, args.batch_size, args.crop_length)
-            dataset.repeat()
+            dataset = dataset.repeat()
             iterator = dataset.make_one_shot_iterator()
             inputs = iterator.get_next()
         # build net.
