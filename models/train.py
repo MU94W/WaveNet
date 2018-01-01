@@ -61,7 +61,7 @@ def main():
             if global_step_eval % args.save_per_steps:
                 if not os.path.exists(args.save_path) or not os.path.isdir(args.save_path):
                     os.makedirs(args.save_path)
-                saver.save(save_path=args.save_path, global_step=global_step_eval)
+                saver.save(sess=sess, save_path=args.save_path, global_step=global_step_eval)
         summary_writer.close()
 
     print("Congratulations!")
