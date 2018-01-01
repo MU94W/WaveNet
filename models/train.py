@@ -15,8 +15,8 @@ def get_args():
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--crop_length", type=int, default=8000)
     parser.add_argument("--sample_rate", type=int, default=16000)
-    parser.add_argument("--add_audio_summary_per_steps", type=int, default=50)
-    parser.add_argument("--save_per_steps", type=int, default=2000)
+    parser.add_argument("--add_audio_summary_per_steps", type=int, default=1000)
+    parser.add_argument("--save_per_steps", type=int, default=5000)
     return parser.parse_args()
 
 
