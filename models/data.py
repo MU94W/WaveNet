@@ -8,7 +8,7 @@ def parse_single_example(example_proto):
     parsed = tf.parse_single_example(example_proto, features=features)
     sr = tf.cast(parsed["sr"], tf.int32)
     key = parsed["key"]
-    wav = tf.divide(tf.cast(tf.decode_raw(parsed["wav_raw"], tf.int16), dtype=tf.float32), 1<<15)
+    wav = tf.divide(tf.cast(tf.decode_raw(parsed["wav_raw"], tf.int16), dtype=tf.float32), 1 << 15)
     return {"sr": sr, "key": key, "wav": wav}
 
 
@@ -25,5 +25,5 @@ def get_dataset(tfrecord_path, batch_size=16, crop_length=16000):
     dataset = dataset.map(parse_single_example)
     dataset = dataset.map(crop_wav(crop_length))
     dataset = dataset.shuffle(10000)
-    dataset = dataset.padded_batch(batch_size, padded_shapes={"sr": (), "key": (), "wav": [None]})
+    dataset = dataset.batch(batch_size)
     return dataset

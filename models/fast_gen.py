@@ -4,7 +4,7 @@ import os
 import tqdm
 import numpy as np
 import scipy.io.wavfile as siowav
-from .configs import FastGen
+from .configs import FastGenV1
 
 
 def get_args():
