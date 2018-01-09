@@ -43,13 +43,14 @@ def fast_gen_dilated_causal_conv1d(inputs, width, dilation_rate, filters, name="
 
         # get real inputs.
         deque_out = queue.dequeue()
-        deque_out = deque_out if width > 2 else [deque_out]
-        concat_inputs = tf.concat(deque_out + [inputs], axis=1)
-        concat_inputs.set_shape(shape=(inputs.get_shape()[0].value, width, channels_in))
-
-        # get outputs.
-        conv_out = tf.nn.conv1d(value=concat_inputs, filters=kernel, stride=1, padding="VALID")
-        out = tf.nn.bias_add(conv_out, bias)
+        if width == 2:
+            out = tf.matmul(deque_out[:, 0, :], kernel[0]) + tf.matmul(inputs[:, 0, :], kernel[1]) + bias
+            deque_out = [deque_out]
+        elif width == 3:
+            out = tf.matmul(deque_out[0][:, 0, :], kernel[0]) + tf.matmul(deque_out[1][:, 0, :], kernel[1]) + \
+                  tf.matmul(inputs[:, 0, :], kernel[2]) + bias
+        else:
+            raise NotImplementedError
 
         # update op.
         upd_op = queue.enqueue(deque_out[1:] + [inputs])
